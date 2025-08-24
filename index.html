@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air, Land, and Sea</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-board">
+        <div class="scoreboard">
+            <h2>Victory Points</h2>
+            <div class="player-score">
+                <span>Player 1:</span>
+                <span id="player1-vp">0</span>
+            </div>
+            <div class="player-score">
+                <span>Player 2:</span>
+                <span id="player2-vp">0</span>
+            </div>
+        </div>
+
+        <div class="player-area player-1-area">
+            <div class="hand player-1-hand">
+                <!-- Player 1's cards in hand -->
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+            </div>
+            <div class="supreme-commander">
+                <h3>P1 Supreme Commander</h3>
+                <div class="card-placeholder"></div>
+            </div>
+        </div>
+
+        <main class="main-game-area">
+            <div id="air-theater" class="theater">
+                <h2>Air</h2>
+                <div class="player-side player-1-side"></div>
+                <div class="player-side player-2-side"></div>
+            </div>
+            <div id="land-theater" class="theater">
+                <h2>Land</h2>
+                <div class="player-side player-1-side"></div>
+                <div class="player-side player-2-side"></div>
+            </div>
+            <div id="sea-theater" class="theater">
+                <h2>Sea</h2>
+                <div class="player-side player-1-side"></div>
+                <div class="player-side player-2-side"></div>
+            </div>
+        </main>
+
+        <div class="player-area player-2-area">
+             <div class="supreme-commander">
+                <h3>P2 Supreme Commander</h3>
+                <div class="card-placeholder"></div>
+            </div>
+            <div class="hand player-2-hand">
+                <!-- Player 2's cards in hand -->
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+                <div class="card-placeholder"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

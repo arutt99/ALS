@@ -114,6 +114,11 @@ body {
     z-index: 10;
 }
 
+.card.selected {
+    border: 2px solid yellow;
+    transform: scale(1.1);
+}
+
 .card img {
     width: 100%;
     height: 100%;
@@ -154,4 +159,20 @@ button {
 
 button:hover {
     background-color: #999;
+}
+
+.action-buttons {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 20px;
+}
+
+.action-buttons.visible {
+    display: flex;
+}
+
+body.improvising .theater {
+    cursor: pointer;
+    border-color: yellow;
 }

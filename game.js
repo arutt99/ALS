@@ -1,4 +1,4 @@
-const deck = [
+const initialDeck = [
     { id: 1, name: 'Support', type: 'Air', strength: 1, tacticalAbility: 'You gain +3 strength in each adjacent theater.', abilityType: 'Ongoing', image: 'assets/air_1.png' },
     { id: 2, name: 'Air Drop', type: 'Air', strength: 2, tacticalAbility: 'On your next turn, you may play a card to a non-matching theater.', abilityType: 'Instant', image: 'assets/air_2.png' },
     { id: 3, name: 'Maneuver', type: 'Air', strength: 3, tacticalAbility: 'FLIP a card in an adjacent theater.', abilityType: 'Instant', image: 'assets/air_3.png' },
@@ -19,8 +19,33 @@ const deck = [
     { id: 18, name: 'Battleship', type: 'Sea', strength: 6, tacticalAbility: 'None', abilityType: 'None', image: 'assets/sea_6.png' }
 ];
 
+let gameState = {};
+
+function initializeGame() {
+    gameState = {
+        deck: [...initialDeck],
+        player1Hand: [],
+        player2Hand: [],
+        drawPile: [],
+        theaters: {
+            air: { player1: [], player2: [] },
+            land: { player1: [], player2: [] },
+            sea: { player1: [], player2: [] }
+        },
+        activePlayer: 1,
+        selectedCard: null,
+        player1Vp: 0,
+        player2Vp: 0
+    };
+    shuffle(gameState.deck);
+    const { player1Hand, player2Hand, drawPile } = deal(gameState.deck);
+    gameState.player1Hand = player1Hand;
+    gameState.player2Hand = player2Hand;
+    gameState.drawPile = drawPile;
+    renderGame();
+}
+
 function shuffle(deck) {
-    // Fisher-Yates shuffle algorithm
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -34,44 +59,80 @@ function deal(deck) {
     return { player1Hand, player2Hand, drawPile };
 }
 
-function displayHands(player1Hand, player2Hand, drawPile) {
-    const player1HandContainer = document.querySelector('.player-1-hand');
-    const player2HandContainer = document.querySelector('.player-2-hand');
+function selectCard(card, index) {
+    if (gameState.activePlayer !== 1) return; // Only player 1 can select cards for now
+    gameState.selectedCard = { ...card, index };
+    renderGame();
+}
+
+function renderGame() {
+    // Visual feedback for improvising mode
+    document.body.classList.toggle('improvising', gameState.isImprovising);
+
+    // Render hands
+    renderHand(gameState.player1Hand, document.querySelector('.player-1-hand'), true, true);
+    renderHand(gameState.player2Hand, document.querySelector('.player-2-hand'), false, false);
+
+    // Render theaters
+    for (const theaterId in gameState.theaters) {
+        const theater = gameState.theaters[theaterId];
+        renderTheater(theater.player1, document.querySelector(`#${theaterId}-theater .player-1-side`), true);
+        renderTheater(theater.player2, document.querySelector(`#${theaterId}-theater .player-2-side`), false);
+    }
+
+    // Render draw pile
     const deckHolderContainer = document.querySelector('.deck-holder');
-
-    // Clear existing cards
-    player1HandContainer.innerHTML = '';
-    player2HandContainer.innerHTML = '';
     deckHolderContainer.innerHTML = '';
-
-    // Display Player 1's hand (face up)
-    for (const card of player1Hand) {
-        const cardElement = document.createElement('div');
-        cardElement.classList.add('card');
-        const cardImage = document.createElement('img');
-        cardImage.src = card.image;
-        cardElement.appendChild(cardImage);
-        player1HandContainer.appendChild(cardElement);
-    }
-
-    // Display Player 2's hand (face down)
-    for (const card of player2Hand) {
-        const cardElement = document.createElement('div');
-        cardElement.classList.add('card');
-        const cardImage = document.createElement('img');
-        cardImage.src = 'assets/card_back.png';
-        cardElement.appendChild(cardImage);
-        player2HandContainer.appendChild(cardElement);
-    }
-
-    // Display draw pile in deck holder
-    if (drawPile && drawPile.length > 0) {
+    if (gameState.drawPile.length > 0) {
         const cardElement = document.createElement('div');
         cardElement.classList.add('card');
         const cardImage = document.createElement('img');
         cardImage.src = 'assets/card_back.png';
         cardElement.appendChild(cardImage);
         deckHolderContainer.appendChild(cardElement);
+    }
+
+    // Show/hide action buttons
+    const actionButtons = document.getElementById('action-buttons');
+    if (gameState.selectedCard) {
+        actionButtons.classList.add('visible');
+    } else {
+        actionButtons.classList.remove('visible');
+    }
+}
+
+function renderHand(hand, container, isFaceUp, isPlayer1) {
+    container.innerHTML = '';
+    hand.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        if (gameState.selectedCard && gameState.selectedCard.id === card.id) {
+            cardElement.classList.add('selected');
+        }
+
+        const cardImage = document.createElement('img');
+        cardImage.src = isFaceUp ? card.image : 'assets/card_back.png';
+        cardElement.appendChild(cardImage);
+
+        if (isPlayer1 && isFaceUp) {
+            cardElement.addEventListener('click', () => {
+                selectCard(card, index);
+            });
+        }
+
+        container.appendChild(cardElement);
+    });
+}
+
+function renderTheater(cards, container, isPlayer1) {
+    container.innerHTML = '';
+    for (const card of cards) {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        const cardImage = document.createElement('img');
+        cardImage.src = card.isFaceDown ? 'assets/card_back.png' : card.image;
+        cardElement.appendChild(cardImage);
+        container.appendChild(cardElement);
     }
 }
 
@@ -84,6 +145,12 @@ function cleanup() {
     player1HandContainer.innerHTML = '';
     player2HandContainer.innerHTML = '';
 
+    // Clear theaters
+    for (const theaterId in gameState.theaters) {
+        document.querySelector(`#${theaterId}-theater .player-1-side`).innerHTML = '';
+        document.querySelector(`#${theaterId}-theater .player-2-side`).innerHTML = '';
+    }
+
     // Display a single card in the deck holder to represent the full deck
     deckHolderContainer.innerHTML = '';
     const cardElement = document.createElement('div');
@@ -94,20 +161,78 @@ function cleanup() {
     deckHolderContainer.appendChild(cardElement);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initial state: all cards in deck
-    cleanup();
+function deployCard() {
+    const { selectedCard, activePlayer } = gameState;
+    if (!selectedCard) return;
 
+    const theaterId = selectedCard.type.toLowerCase();
+    const player = `player${activePlayer}`;
+
+    // Add card to theater
+    gameState.theaters[theaterId][player].push(selectedCard);
+
+    // Remove card from hand
+    gameState.player1Hand.splice(selectedCard.index, 1);
+
+    // Clear selected card
+    gameState.selectedCard = null;
+
+    renderGame();
+}
+
+function improviseCard() {
+    if (!gameState.selectedCard) return;
+    gameState.isImprovising = true;
+    // Maybe add some visual feedback to show that we are in improvising mode
+    console.log('Select a theater to improvise...');
+}
+
+function handleTheaterClick(theaterId) {
+    if (!gameState.isImprovising || !gameState.selectedCard) return;
+
+    const { selectedCard, activePlayer } = gameState;
+    const player = `player${activePlayer}`;
+
+    const improvisedCard = {
+        ...selectedCard,
+        isFaceDown: true,
+        strength: 2
+    };
+
+    // Add card to theater
+    gameState.theaters[theaterId][player].push(improvisedCard);
+
+    // Remove card from hand
+    gameState.player1Hand.splice(selectedCard.index, 1);
+
+    // Reset state
+    gameState.selectedCard = null;
+    gameState.isImprovising = false;
+
+    renderGame();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     const dealBtn = document.getElementById('deal-btn');
     const cleanupBtn = document.getElementById('cleanup-btn');
+    const deployBtn = document.getElementById('deploy-btn');
+    const improviseBtn = document.getElementById('improvise-btn');
 
     dealBtn.addEventListener('click', () => {
-        shuffle(deck);
-        const { player1Hand, player2Hand, drawPile } = deal(deck);
-        displayHands(player1Hand, player2Hand, drawPile);
+        initializeGame();
     });
 
     cleanupBtn.addEventListener('click', () => {
         cleanup();
+        initializeGame();
     });
+
+    deployBtn.addEventListener('click', deployCard);
+    improviseBtn.addEventListener('click', improviseCard);
+
+    document.querySelectorAll('.theater').forEach(theater => {
+        theater.addEventListener('click', () => handleTheaterClick(theater.id.replace('-theater', '')));
+    });
+
+    initializeGame();
 });

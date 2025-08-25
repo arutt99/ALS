@@ -196,7 +196,8 @@ function deployCard() {
 function improviseCard() {
     if (!gameState.selectedCard) return;
     gameState.isImprovising = true;
-    // Maybe add some visual feedback to show that we are in improvising mode
+    // Refresh the UI so the player can see we are in improvising mode
+    renderGame();
     console.log('Select a theater to improvise...');
 }
 

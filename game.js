@@ -34,13 +34,15 @@ function deal(deck) {
     return { player1Hand, player2Hand, drawPile };
 }
 
-function displayHands(player1Hand, player2Hand) {
+function displayHands(player1Hand, player2Hand, drawPile) {
     const player1HandContainer = document.querySelector('.player-1-hand');
     const player2HandContainer = document.querySelector('.player-2-hand');
+    const deckHolderContainer = document.querySelector('.deck-holder');
 
     // Clear existing cards
     player1HandContainer.innerHTML = '';
     player2HandContainer.innerHTML = '';
+    deckHolderContainer.innerHTML = '';
 
     // Display Player 1's hand (face up)
     for (const card of player1Hand) {
@@ -61,10 +63,51 @@ function displayHands(player1Hand, player2Hand) {
         cardElement.appendChild(cardImage);
         player2HandContainer.appendChild(cardElement);
     }
+
+    // Display draw pile in deck holder
+    if (drawPile && drawPile.length > 0) {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        const cardImage = document.createElement('img');
+        cardImage.src = 'assets/card_back.png';
+        cardElement.appendChild(cardImage);
+        deckHolderContainer.appendChild(cardElement);
+    }
+}
+
+function cleanup() {
+    const player1HandContainer = document.querySelector('.player-1-hand');
+    const player2HandContainer = document.querySelector('.player-2-hand');
+    const deckHolderContainer = document.querySelector('.deck-holder');
+
+    // Clear hands
+    player1HandContainer.innerHTML = '';
+    player2HandContainer.innerHTML = '';
+
+    // Display a single card in the deck holder to represent the full deck
+    deckHolderContainer.innerHTML = '';
+    const cardElement = document.createElement('div');
+    cardElement.classList.add('card');
+    const cardImage = document.createElement('img');
+    cardImage.src = 'assets/card_back.png';
+    cardElement.appendChild(cardImage);
+    deckHolderContainer.appendChild(cardElement);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    shuffle(deck);
-    const { player1Hand, player2Hand } = deal(deck);
-    displayHands(player1Hand, player2Hand);
+    // Initial state: all cards in deck
+    cleanup();
+
+    const dealBtn = document.getElementById('deal-btn');
+    const cleanupBtn = document.getElementById('cleanup-btn');
+
+    dealBtn.addEventListener('click', () => {
+        shuffle(deck);
+        const { player1Hand, player2Hand, drawPile } = deal(deck);
+        displayHands(player1Hand, player2Hand, drawPile);
+    });
+
+    cleanupBtn.addEventListener('click', () => {
+        cleanup();
+    });
 });

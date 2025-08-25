@@ -64,39 +64,40 @@ body {
     width: 30%;
     border: 2px solid #000;
     padding: 10px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #air-theater {
-    background-color: #add8e6; /* Light Blue */
+    /* background-color: #add8e6; /* Light Blue */
 }
 
 #land-theater {
-    background-color: #90ee90; /* Green */
+    /* background-color: #90ee90; /* Green */
 }
 
 #sea-theater {
-    background-color: #00008b; /* Dark Blue */
-}
-
-.theater h2 {
-    margin-top: 0;
-    color: #000;
+    /* background-color: #00008b; /* Dark Blue */
 }
 
 .player-side {
     min-height: 150px;
-    margin-top: 10px;
     border: 1px solid #555;
     background-color: rgba(255, 255, 255, 0.1);
+    width: 100%;
+    margin: 10px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    align-content: flex-start;
 }
 
-.player-1-side {
-    margin-bottom: 5px;
-}
-
-.player-2-side {
-    margin-top: 5px;
+.theater-image {
+    width: 100%;
+    height: auto;
+    margin: 10px 0;
 }
 
 .card {

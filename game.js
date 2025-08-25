@@ -34,6 +34,7 @@ function initializeGame() {
         },
         activePlayer: 1,
         selectedCard: null,
+        isImprovising: false,
         player1Vp: 0,
         player2Vp: 0
     };
@@ -60,8 +61,8 @@ function deal(deck) {
 }
 
 function selectCard(card, index) {
-    if (gameState.activePlayer !== 1) return; // Only player 1 can select cards for now
-    gameState.selectedCard = { ...card, index };
+    // Store which player's card was selected so we can remove it later
+    gameState.selectedCard = { ...card, index, player: gameState.activePlayer };
     renderGame();
 }
 
@@ -69,9 +70,19 @@ function renderGame() {
     // Visual feedback for improvising mode
     document.body.classList.toggle('improvising', gameState.isImprovising);
 
-    // Render hands
-    renderHand(gameState.player1Hand, document.querySelector('.player-1-hand'), true, true);
-    renderHand(gameState.player2Hand, document.querySelector('.player-2-hand'), false, false);
+    // Render hands, only the active player's hand is face up and selectable
+    renderHand(
+        gameState.player1Hand,
+        document.querySelector('.player-1-hand'),
+        gameState.activePlayer === 1,
+        gameState.activePlayer === 1
+    );
+    renderHand(
+        gameState.player2Hand,
+        document.querySelector('.player-2-hand'),
+        gameState.activePlayer === 2,
+        gameState.activePlayer === 2
+    );
 
     // Render theaters
     for (const theaterId in gameState.theaters) {
@@ -101,7 +112,7 @@ function renderGame() {
     }
 }
 
-function renderHand(hand, container, isFaceUp, isPlayer1) {
+function renderHand(hand, container, isFaceUp, isSelectable) {
     container.innerHTML = '';
     hand.forEach((card, index) => {
         const cardElement = document.createElement('div');
@@ -114,7 +125,7 @@ function renderHand(hand, container, isFaceUp, isPlayer1) {
         cardImage.src = isFaceUp ? card.image : 'assets/card_back.png';
         cardElement.appendChild(cardImage);
 
-        if (isPlayer1 && isFaceUp) {
+        if (isSelectable && isFaceUp) {
             cardElement.addEventListener('click', () => {
                 selectCard(card, index);
             });
@@ -166,16 +177,18 @@ function deployCard() {
     if (!selectedCard) return;
 
     const theaterId = selectedCard.type.toLowerCase();
-    const player = `player${activePlayer}`;
+    const playerKey = `player${activePlayer}`;
+    const handKey = `${playerKey}Hand`;
 
-    // Add card to theater
-    gameState.theaters[theaterId][player].push(selectedCard);
+    // Add card to its matching theater
+    gameState.theaters[theaterId][playerKey].push(selectedCard);
 
-    // Remove card from hand
-    gameState.player1Hand.splice(selectedCard.index, 1);
+    // Remove card from the active player's hand
+    gameState[handKey].splice(selectedCard.index, 1);
 
-    // Clear selected card
+    // Clear selection and pass the turn
     gameState.selectedCard = null;
+    gameState.activePlayer = activePlayer === 1 ? 2 : 1;
 
     renderGame();
 }
@@ -191,7 +204,8 @@ function handleTheaterClick(theaterId) {
     if (!gameState.isImprovising || !gameState.selectedCard) return;
 
     const { selectedCard, activePlayer } = gameState;
-    const player = `player${activePlayer}`;
+    const playerKey = `player${activePlayer}`;
+    const handKey = `${playerKey}Hand`;
 
     const improvisedCard = {
         ...selectedCard,
@@ -199,15 +213,16 @@ function handleTheaterClick(theaterId) {
         strength: 2
     };
 
-    // Add card to theater
-    gameState.theaters[theaterId][player].push(improvisedCard);
+    // Add card to the chosen theater
+    gameState.theaters[theaterId][playerKey].push(improvisedCard);
 
-    // Remove card from hand
-    gameState.player1Hand.splice(selectedCard.index, 1);
+    // Remove card from the active player's hand
+    gameState[handKey].splice(selectedCard.index, 1);
 
-    // Reset state
+    // Reset state and pass the turn
     gameState.selectedCard = null;
     gameState.isImprovising = false;
+    gameState.activePlayer = activePlayer === 1 ? 2 : 1;
 
     renderGame();
 }
